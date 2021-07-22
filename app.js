@@ -2,11 +2,13 @@ const express=require('express');
 const app=express();
 const passport=require('passport')
 const loginroute= require('./routes/route');
-
 const passportSetup=require('./config/passport-setup')
 const mongoose=require('mongoose')
 const cookieSession = require('cookie-session')
-
+const cors=require('cors');
+app.use(cors({
+    origin: "http://localhost:3000",credentials:true
+}));
 mongoose.connect('mongodb://localhost/userdata',{
     useCreateIndex:true,
     useNewUrlParser:true,
@@ -14,23 +16,22 @@ mongoose.connect('mongodb://localhost/userdata',{
 })
 .then(() => console.log('connecting with mongodb........'))
 .catch(err => console.error('could not connect to mongo db',err))
-
-
-// const loggedin=(req, res ,next) =>{
-//     console.log("user is",req.user);
-//     if(req.user==null){
-//         console.log(req.user)
-//         res.render('login')
-//     }else{
-//         next();
-//     }
-// }
-
 app.use(express.static('public'));
+
+
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
+
+const funcb = (req,res,next)=>{
+    res.header("Access-Control-Allow-Origin", "*");
+}
+
 app.set('view engine','ejs');
 app.use(express.static('public'));
 
-app.use('/login',loginroute);
 
 
 app.use(cookieSession({
@@ -38,14 +39,17 @@ app.use(cookieSession({
     keys:["abcdefghijklmopqrstuvwxyz"]
 }))
 
+
+
 app.use(passport.initialize());
 app.use(passport.session());
 
 const ensureAuth = (req, res, next)=> { 
+    console.log("inside ensure auth");
     if (req.isAuthenticated()) {
-        return next()
+        return next();
     } else {
-        res.redirect('/')
+        res.redirect('/login')
     }
 }
 
@@ -67,16 +71,46 @@ app.get('/login',ensureGuest,(req,res)=>{
 })
 
 
-app.get('/auth',passport.authenticate('google'),(req,res)=>{
-    console.log( "app user",req.user)
-    res.redirect('/home');
-})
+app.get(
+    "/auth",
+    passport.authenticate("google", {
+      successRedirect: "http://localhost:3000/home",
+      failureRedirect: "/login"
+    })
+  );
 
 
 app.get('/home',ensureAuth,(req,res)=>{
-    console.log("req is:",req.user)
-    res.render('index',{name:req.user.Name});
+    // console.log("req is:",req.user)
+    // res.render('index',{name:req.user.Name});
+    res.send({mail:"jhde@iitgoa.ac.in"});
 })
+
+app.get('/allowcors',(req,res)=>{
+    res.set("Access-Control-Allow-Origin", "*");
+    res.send("hi");
+})
+
+app.get('/checkauth',ensureAuth,(req,res)=>{
+    res.sendStatus(200);
+})
+
+
+app.get('/login/google',passport.authenticate('google',{scope:['profile','email']}));
+
+
+
+
+app.get('/Teamup',ensureAuth,(req,res)=>{
+    res.redirect("http://localhost:3000/Teamup")
+})
+
+
+// app.get('/login/auth',passport.authenticate('google'),(req,res)=>{
+//     console.log( "router user",req.user)
+    
+//     res.redirect('/home');
+// })
 
 
 app.listen(4444,()=>{

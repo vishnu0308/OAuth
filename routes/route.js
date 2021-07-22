@@ -5,7 +5,7 @@ const app=express();
 app.use(express.static('public'));
 
 
-router.get('/google',passport.authenticate('google',{scope:['profile','email','contacts']}));
+router.get('/google',passport.authenticate('google',{scope:['profile','email']}));
 
 
 
