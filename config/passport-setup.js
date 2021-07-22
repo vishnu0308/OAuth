@@ -13,6 +13,7 @@ passport.deserializeUser((id, done) => {
   });
 });
 
+<<<<<<< HEAD
 passport.use(
   new GoogleStrategy(
     {
@@ -20,6 +21,13 @@ passport.use(
         "261769876817-qr2ieeabru04bnne63hgbvg32sfehmdj.apps.googleusercontent.com",
       clientSecret: "zkrrsjugp2DJBS6zpMexttUQ",
       callbackURL: "http://localhost:4444/auth",
+=======
+passport.use(new GoogleStrategy({
+    clientID: 
+    'xyz',
+    clientSecret: "xyz",
+    callbackURL: "http://localhost:4444/auth"
+>>>>>>> 8c5c71f5a2339cda554323dc671bfecf0e066497
     },
     (accessToken, refreshToken, profile, done) => {
       console.log(profile);
